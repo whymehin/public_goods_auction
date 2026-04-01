@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>公共物品與搭便車｜魔法拍賣合作社 (Dynamic Edition)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f9e7b3 0%, #f5c542 100%);
+            font-family: 'Segoe UI', 'Comic Neue', 'Poppins', '微軟正黑體', cursive, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: rgba(255, 248, 225, 0.85);
+            border-radius: 72px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2), inset 0 1px 4px rgba(255, 255, 200, 0.8);
+            backdrop-filter: blur(3px);
+            padding: 20px 25px 35px;
+            transition: all 0.2s;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.8rem;
+            margin: 0 0 5px;
+            background: linear-gradient(135deg, #2c5a2e, #a5673f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 4px 4px 12px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+        }
+        .sub {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #3b2a1f;
+            background: #fff0bf;
+            display: inline-block;
+            width: auto;
+            margin: 0 auto 20px;
+            padding: 5px 20px;
+            border-radius: 60px;
+            box-shadow: inset 0 1px 3px #0001, 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .players-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 35px;
+        }
+
+        .player-card {
+            flex: 1;
+            min-width: 250px;
+            background: #fffcf0;
+            border-radius: 48px;
+            padding: 18px 14px 20px;
+            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+            border: 2px solid #ffdd99;
+        }
+        .player-card:hover {
+            transform: translateY(-6px);
+        }
+        .player-name {
+            font-size: 1.9rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 12px;
+            background: #ffe0a3;
+            border-radius: 60px;
+            padding: 6px 12px;
+        }
+        .funds {
+            font-size: 1.6rem;
+            font-weight: bold;
+            text-align: center;
+            background: #d9e6b3;
+            border-radius: 40px;
+            padding: 8px;
+            margin: 10px 0;
+            color: #2b4f2b;
+        }
+        .magic-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 12px 0;
+            background: #f9e5c1;
+            border-radius: 32px;
+            padding: 8px;
+        }
+        .magic-badge {
+            background: #f5bc70;
+            border-radius: 30px;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: inset 0 1px 2px #fff9, 0 1px 2px #0002;
+        }
+        .bid-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2rem;
+            text-align: center;
+            border-radius: 40px;
+            border: 2px solid #cb9e5e;
+            background: #fff6e8;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .magic-select, .target-select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 30px;
+            background: #f8edc3;
+            font-weight: bold;
+            border: 1px solid #dbaa63;
+        }
+        label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #7b4a2a;
+        }
+        button {
+            background: #ffaa33;
+            border: none;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.1s linear;
+            font-size: 0.85rem;
+            box-shadow: 0 3px 0 #aa6f2c;
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #aa6f2c;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0 15px;
+        }
+        .big-btn {
+            background: #3b9e3d;
+            color: white;
+            font-size: 1.3rem;
+            padding: 12px 28px;
+            box-shadow: 0 5px 0 #1e5a20;
+        }
+        .reset-btn {
+            background: #c97e2c;
+            box-shadow: 0 5px 0 #7e4a1a;
+        }
+        .log-area {
+            background: #2d2b1fcc;
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 16px 20px;
+            color: #fef2cf;
+            font-family: monospace;
+            max-height: 280px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 1px solid #ffdd99;
+        }
+        .log-entry {
+            border-bottom: 1px solid #ffcf8a;
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+        .round-info {
+            background: #b5712e;
+            border-radius: 50px;
+            padding: 10px 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: auto;
+        }
+        .public-goods-showcase {
+            background: #f0dba8;
+            border-radius: 60px;
+            padding: 8px 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.05), 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .goods-icons {
+            font-size: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            flex-wrap: wrap;
+            margin: 10px 0 8px;
+        }
+        .goods-icons span {
+            background: white;
+            padding: 8px 14px;
+            border-radius: 60px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #3b2a1f;
+        }
+        .goods-icons i {
+            font-size: 1.8rem;
+        }
+        .goods-title {
+            font-size: 1rem;
+            color: #5c3e1c;
+            background: #ffe6b3;
+            display: inline-block;
+            padding: 4px 18px;
+            border-radius: 40px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 15px;
+            color: #382812;
+        }
+        @media (max-width: 780px) {
+            .player-card { min-width: 220px; }
+            .player-name { font-size: 1.3rem; }
+            .goods-icons span { font-size: 0.8rem; padding: 4px 10px; }
+            .goods-icons i { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>🏡 社區奇蹟拍賣會 🎴</h1>
+    <div style="text-align: center;">
+        <div class="sub">⚡ 公共財困境｜動態獎勵模式 ⚡</div>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+        <div class="round-info">🎲 第 <span id="roundNum">1</span> / <span id="maxRound">10</span> 回合</div>
+        <div class="round-info">🎯 專案門檻: $<span id="thresholdVal">----</span> &nbsp;|&nbsp; 🌟 成功每人獎勵: $<span id="rewardVal">----</span></div>
+    </div>
+
+    <div class="public-goods-showcase" id="publicGoodsArea">
+        <div class="goods-title">🌍 本回合社區公共項目</div>
+        <div class="goods-icons" id="goodsIconsContainer"></div>
+    </div>
+
+    <div class="players-row" id="playersRow"></div>
+
+    <div class="action-buttons">
+        <button id="submitRoundBtn" class="big-btn">✨ 送出盲標 & 使用魔法 ✨</button>
+        <button id="resetGameBtn" class="big-btn reset-btn">🔄 重新開始冒險</button>
+    </div>
+
+    <div class="log-area" id="logPanel"></div>
+    <footer>🏆 10回合後結算｜魔法卡使用後消耗｜門檻與獎勵每回合隨機更新</footer>
+</div>
+
+<script>
+    // ----- 遊戲設定 -----
+    const MAX_ROUNDS = 10;
+    const START_FUNDS = 5000;
+    
+    // 動態變數
+    let currentThreshold = 5000;
+    let currentReward = 500;
+    
+    const MAGIC_TYPES = {
+        DOUBLE: "double",
+        HALF: "half",
+        DEFENSE: "defense",
+        BLOCK: "block"
+    };
+    
+    const MAGIC_NAMES = {
+        [MAGIC_TYPES.DOUBLE]: "🔥 雙倍奉還 🔥",
+        [MAGIC_TYPES.HALF]: "🍃 精打細算 🍃",
+        [MAGIC_TYPES.DEFENSE]: "🛡️ 鐵壁結界 🛡️",
+        [MAGIC_TYPES.BLOCK]: "⛔ 釜底抽薪 ⛔"
+    };
+    
+    const MAGIC_EMOJI = {
+        [MAGIC_TYPES.DOUBLE]: "⚡x2",
+        [MAGIC_TYPES.HALF]: "✂️½",
+        [MAGIC_TYPES.DEFENSE]: "🛡️",
+        [MAGIC_TYPES.BLOCK]: "🚫"
+    };
+    
+    const PLAYERS = [
+        { id: 0, name: "🌻 向日葵小隊", emoji: "🌻" },
+        { id: 1, name: "🐻 懶懶熊團", emoji: "🐻" },
+        { id: 2, name: "🦊 機靈狐社", emoji: "🦊" },
+        { id: 3, name: "🐧 企鵝互助會", emoji: "🐧" }
+    ];
+    
+    const PUBLIC_GOODS_LIST = [
+        { name: "🌳 社區森林公園", icons: ["fas fa-tree", "fas fa-leaf", "fas fa-bench"] },
+        { name: "📚 公共圖書館", icons: ["fas fa-book", "fas fa-university", "fas fa-graduation-cap"] },
+        { name: "💡 智慧路燈照明", icons: ["fas fa-lightbulb", "fas fa-street-view", "fas fa-sun"] },
+        { name: "🚰 乾淨自來水系統", icons: ["fas fa-tint", "fas fa-hand-holding-water", "fas fa-water"] },
+        { name: "🚌 大眾運輸網絡", icons: ["fas fa-bus", "fas fa-subway", "fas fa-train"] },
+        { name: "📡 免費公共 Wi-Fi", icons: ["fas fa-wifi", "fas fa-globe", "fas fa-broadcast-tower"] },
+        { name: "🏥 社區健康中心", icons: ["fas fa-hospital-user", "fas fa-heartbeat", "fas fa-ambulance"] },
+        { name: "🚓 公共安全巡邏", icons: ["fas fa-shield-alt", "fas fa-police-badge", "fas fa-lock"] },
+        { name: "🎭 文化藝術廣場", icons: ["fas fa-theater-masks", "fas fa-music", "fas fa-palette"] },
+        { name: "♻️ 資源回收環保站", icons: ["fas fa-recycle", "fas fa-leaf", "fas fa-trash-alt"] }
+    ];
+    
+    let currentRound = 1;
+    let gameActive = true;
+    let playersData = [];
+    
+    // --- 新增功能：隨機化門檻與獎勵 ---
+    function randomizeValues() {
+        // 門檻隨機：$500 - $4500 (保留空間給獎勵)
+        currentThreshold = Math.floor(Math.random() * (4500 - 500 + 1)) + 500;
+        
+        // 獎勵隨機：(門檻 + 100) - $5000 (確保獎勵高於門檻)
+        const minReward = currentThreshold + 100;
+        currentReward = Math.floor(Math.random() * (5000 - minReward + 1)) + minReward;
+        
+        // 更新 UI
+        document.getElementById("thresholdVal").innerText = currentThreshold.toLocaleString();
+        document.getElementById("rewardVal").innerText = currentReward.toLocaleString();
+    }
+
+    function updatePublicGoodsDisplay() {
+        const container = document.getElementById("goodsIconsContainer");
+        if (!container) return;
+        const idx = (currentRound - 1) % PUBLIC_GOODS_LIST.length;
+        const goods = PUBLIC_GOODS_LIST[idx];
+        container.innerHTML = "";
+        
+        const titleSpan = document.createElement("span");
+        titleSpan.style.background = "#f5e2b0";
+        titleSpan.innerHTML = `✨ ${goods.name} ✨`;
+        container.appendChild(titleSpan);
+        
+        goods.icons.forEach(iconClass => {
+            const iconSpan = document.createElement("span");
+            iconSpan.innerHTML = `<i class="${iconClass}"></i>`;
+            container.appendChild(iconSpan);
+        });
+    }
+    
+    function addLog(msg, isError = false) {
+        const logDiv = document.getElementById("logPanel");
+        const entry = document.createElement("div");
+        entry.className = "log-entry";
+        entry.style.color = isError ? "#ffb5a7" : "#fff0cf";
+        entry.innerHTML = `📢 ${msg}`;
+        logDiv.appendChild(entry);
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+    
+    function initGame() {
+        playersData = PLAYERS.map(p => ({
+            id: p.id,
+            name: p.name,
+            emoji: p.emoji,
+            funds: START_FUNDS,
+            magicCards: {
+                [MAGIC_TYPES.DOUBLE]: 1,
+                [MAGIC_TYPES.HALF]: 1,
+                [MAGIC_TYPES.DEFENSE]: 1,
+                [MAGIC_TYPES.BLOCK]: 1
+            }
+        }));
+        currentRound = 1;
+        gameActive = true;
+        document.getElementById("logPanel").innerHTML = "";
+        document.getElementById("submitRoundBtn").disabled = false;
+        
+        randomizeValues();
+        addLog("🎉 遊戲啟動！門檻與獎勵每回合隨機生成，祝各位合作愉快。");
+        renderPlayersUI();
+        document.getElementById("roundNum").innerText = currentRound;
+        updatePublicGoodsDisplay();
+    }
+    
+    function renderPlayersUI() {
+        const container = document.getElementById("playersRow");
+        container.innerHTML = "";
+        playersData.forEach(p => {
+            const card = document.createElement("div");
+            card.className = "player-card";
+            card.dataset.pid = p.id;
+            card.innerHTML = `
+                <div class="player-name">${p.emoji} ${p.name}</div>
+                <div class="funds">💰 ${p.funds.toLocaleString()}</div>
+                <div class="magic-stats" id="magicStats-${p.id}">${renderMagicBadges(p)}</div>
+                <input type="number" id="bid-${p.id}" class="bid-input" value="0" min="0">
+                <label>✨ 魔法選擇</label>
+                <select id="magicSelect-${p.id}" class="magic-select" onchange="updateTargetSelector(${p.id}, this.value)">
+                    <option value="">不使用</option>
+                    ${renderMagicOptions(p)}
+                </select>
+                <div id="targetDiv-${p.id}"></div>
+            `;
+            container.appendChild(card);
+        });
+    }
+    
+    function renderMagicBadges(player) {
+        return Object.entries(MAGIC_NAMES).map(([type, name]) => 
+            `<div class="magic-badge">${MAGIC_EMOJI[type]} ${player.magicCards[type]}</div>`
+        ).join('');
+    }
+    
+    function renderMagicOptions(player) {
+        return Object.entries(MAGIC_NAMES)
+            .filter(([type]) => player.magicCards[type] > 0)
+            .map(([type, name]) => `<option value="${type}">${MAGIC_EMOJI[type]} ${name}</option>`)
+            .join('');
+    }
+    
+    function updateTargetSelector(playerId, magicType) {
+        const div = document.getElementById(`targetDiv-${playerId}`);
+        if (magicType === MAGIC_TYPES.DOUBLE || magicType === MAGIC_TYPES.BLOCK) {
+            let opts = playersData.filter(p => p.id !== playerId)
+                .map(p => `<option value="${p.id}">${p.emoji} ${p.name}</option>`).join('');
+            div.innerHTML = `<label>🎯 目標</label><select id="targetSelect-${playerId}" class="target-select">${opts}</select>`;
+        } else {
+            div.innerHTML = "";
+        }
+    }
+
+    function resolveRound() {
+        if (!gameActive) return;
+
+        let bids = playersData.map(p => {
+            let val = parseInt(document.getElementById(`bid-${p.id}`).value) || 0;
+            if (val > p.funds) val = p.funds;
+            return { pid: p.id, amount: val };
+        });
+
+        let magicActions = [];
+        playersData.forEach(p => {
+            const type = document.getElementById(`magicSelect-${p.id}`).value;
+            if (type && p.magicCards[type] > 0) {
+                let targetId = null;
+                const ts = document.getElementById(`targetSelect-${p.id}`);
+                if (ts) targetId = parseInt(ts.value);
+                magicActions.push({ casterId: p.id, type, targetId });
+                p.magicCards[type]--;
+            }
+        });
+
+        let finalContrib = new Map();
+        bids.forEach(b => finalContrib.set(b.pid, b.amount));
+
+        // 1. 防禦檢測
+        const protected = new Set(magicActions.filter(a => a.type === MAGIC_TYPES.DEFENSE).map(a => a.casterId));
+
+        // 2. 減半處理
+        magicActions.filter(a => a.type === MAGIC_TYPES.HALF).forEach(a => {
+            let val = Math.floor(finalContrib.get(a.casterId) / 2);
+            finalContrib.set(a.casterId, val);
+            addLog(`✨ ${getPlayerName(a.casterId)} 精打細算，貢獻減半為 $${val}`);
+        });
+
+        // 3. 加倍處理
+        magicActions.filter(a => a.type === MAGIC_TYPES.DOUBLE).forEach(a => {
+            if (protected.has(a.targetId)) {
+                addLog(`🛡️ ${getPlayerName(a.targetId)} 防禦成功！`);
+            } else {
+                let val = finalContrib.get(a.targetId) * 2;
+                finalContrib.set(a.targetId, val);
+                addLog(`⚡ ${getPlayerName(a.casterId)} 對 ${getPlayerName(a.targetId)} 施放雙倍奉還！`);
+            }
+        });
+
+        // 結算扣款
+        let total = 0;
+        playersData.forEach(p => {
+            let pay = Math.min(finalContrib.get(p.id), p.funds);
+            p.funds -= pay;
+            total += pay;
+            finalContrib.set(p.id, pay); // 更新實際支付
+        });
+
+        const success = total >= currentThreshold;
+        addLog(`📊 回合總計: $${total} (門檻 $${currentThreshold}) -> ${success ? '✅ 成功' : '❌ 失敗'}`);
+
+        if (success) {
+            const blocked = new Set();
+            magicActions.filter(a => a.type === MAGIC_TYPES.BLOCK).forEach(a => {
+                if (!protected.has(a.targetId)) {
+                    blocked.add(a.targetId);
+                    addLog(`🚫 ${getPlayerName(a.casterId)} 封鎖了 ${getPlayerName(a.targetId)} 的獎勵`);
+                }
+            });
+            playersData.forEach(p => {
+                if (!blocked.has(p.id)) p.funds += currentReward;
+            });
+        }
+
+        renderPlayersUI();
+        if (currentRound >= MAX_ROUNDS) {
+            gameActive = false;
+            addLog("🎊 遊戲結束！最終贏家即將揭曉...");
+            document.getElementById("submitRoundBtn").disabled = true;
+        } else {
+            currentRound++;
+            document.getElementById("roundNum").innerText = currentRound;
+            randomizeValues(); // 下一回合隨機化
+            updatePublicGoodsDisplay();
+        }
+    }
+
+    function getPlayerName(id) { return playersData.find(p => p.id === id).name; }
+
+    window.onload = () => {
+        initGame();
+        document.getElementById("submitRoundBtn").onclick = resolveRound;
+        document.getElementById("resetGameBtn").onclick = initGame;
+    };
+</script>
+</body>
+</html>

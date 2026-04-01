@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>公共物品與搭便車｜魔法拍賣合作社 (Dynamic Edition)</title>
+    <title>公共物品與搭便車｜魔法拍賣合作社 (修訂版)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -267,7 +267,7 @@
 <div class="game-container">
     <h1>🏡 社區奇蹟拍賣會 🎴</h1>
     <div style="text-align: center;">
-        <div class="sub">⚡ 公共財困境｜動態獎勵模式 ⚡</div>
+        <div class="sub">⚡ 公共財困境｜精打細算只付半價，貢獻卻滿額 ⚡</div>
     </div>
     <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
         <div class="round-info">🎲 第 <span id="roundNum">1</span> / <span id="maxRound">10</span> 回合</div>
@@ -287,7 +287,7 @@
     </div>
 
     <div class="log-area" id="logPanel"></div>
-    <footer>🏆 10回合後結算｜魔法卡使用後消耗｜門檻與獎勵每回合隨機更新</footer>
+    <footer>🏆 10回合後結算｜「精打細算」：付半價，貢獻全額｜「雙倍奉還」：目標付出雙倍，貢獻雙倍｜防禦可擋雙倍&封鎖</footer>
 </div>
 
 <script>
@@ -344,16 +344,11 @@
     let gameActive = true;
     let playersData = [];
     
-    // --- 新增功能：隨機化門檻與獎勵 ---
+    // --- 隨機化門檻與獎勵 (獎勵 > 門檻) ---
     function randomizeValues() {
-        // 門檻隨機：$500 - $4500 (保留空間給獎勵)
         currentThreshold = Math.floor(Math.random() * (4500 - 500 + 1)) + 500;
-        
-        // 獎勵隨機：(門檻 + 100) - $5000 (確保獎勵高於門檻)
         const minReward = currentThreshold + 100;
         currentReward = Math.floor(Math.random() * (5000 - minReward + 1)) + minReward;
-        
-        // 更新 UI
         document.getElementById("thresholdVal").innerText = currentThreshold.toLocaleString();
         document.getElementById("rewardVal").innerText = currentReward.toLocaleString();
     }
@@ -364,12 +359,10 @@
         const idx = (currentRound - 1) % PUBLIC_GOODS_LIST.length;
         const goods = PUBLIC_GOODS_LIST[idx];
         container.innerHTML = "";
-        
         const titleSpan = document.createElement("span");
         titleSpan.style.background = "#f5e2b0";
         titleSpan.innerHTML = `✨ ${goods.name} ✨`;
         container.appendChild(titleSpan);
-        
         goods.icons.forEach(iconClass => {
             const iconSpan = document.createElement("span");
             iconSpan.innerHTML = `<i class="${iconClass}"></i>`;
@@ -406,7 +399,7 @@
         document.getElementById("submitRoundBtn").disabled = false;
         
         randomizeValues();
-        addLog("🎉 遊戲啟動！門檻與獎勵每回合隨機生成，祝各位合作愉快。");
+        addLog("🎉 遊戲啟動！「精打細算」：支付半價但貢獻全額，讓你聰明搭便車！");
         renderPlayersUI();
         document.getElementById("roundNum").innerText = currentRound;
         updatePublicGoodsDisplay();
@@ -423,7 +416,7 @@
                 <div class="player-name">${p.emoji} ${p.name}</div>
                 <div class="funds">💰 ${p.funds.toLocaleString()}</div>
                 <div class="magic-stats" id="magicStats-${p.id}">${renderMagicBadges(p)}</div>
-                <input type="number" id="bid-${p.id}" class="bid-input" value="0" min="0">
+                <input type="number" id="bid-${p.id}" class="bid-input" value="0" min="0" step="100">
                 <label>✨ 魔法選擇</label>
                 <select id="magicSelect-${p.id}" class="magic-select" onchange="updateTargetSelector(${p.id}, this.value)">
                     <option value="">不使用</option>
@@ -448,7 +441,7 @@
             .join('');
     }
     
-    function updateTargetSelector(playerId, magicType) {
+    window.updateTargetSelector = function(playerId, magicType) {
         const div = document.getElementById(`targetDiv-${playerId}`);
         if (magicType === MAGIC_TYPES.DOUBLE || magicType === MAGIC_TYPES.BLOCK) {
             let opts = playersData.filter(p => p.id !== playerId)
@@ -457,93 +450,161 @@
         } else {
             div.innerHTML = "";
         }
-    }
-
+    };
+    
+    function getPlayerName(id) { return playersData.find(p => p.id === id).name; }
+    
+    // ----- 核心結算邏輯 (修訂版) -----
     function resolveRound() {
         if (!gameActive) return;
-
-        let bids = playersData.map(p => {
-            let val = parseInt(document.getElementById(`bid-${p.id}`).value) || 0;
-            if (val > p.funds) val = p.funds;
-            return { pid: p.id, amount: val };
-        });
-
-        let magicActions = [];
-        playersData.forEach(p => {
-            const type = document.getElementById(`magicSelect-${p.id}`).value;
-            if (type && p.magicCards[type] > 0) {
-                let targetId = null;
-                const ts = document.getElementById(`targetSelect-${p.id}`);
-                if (ts) targetId = parseInt(ts.value);
-                magicActions.push({ casterId: p.id, type, targetId });
-                p.magicCards[type]--;
-            }
-        });
-
-        let finalContrib = new Map();
-        bids.forEach(b => finalContrib.set(b.pid, b.amount));
-
-        // 1. 防禦檢測
-        const protected = new Set(magicActions.filter(a => a.type === MAGIC_TYPES.DEFENSE).map(a => a.casterId));
-
-        // 2. 減半處理
-        magicActions.filter(a => a.type === MAGIC_TYPES.HALF).forEach(a => {
-            let val = Math.floor(finalContrib.get(a.casterId) / 2);
-            finalContrib.set(a.casterId, val);
-            addLog(`✨ ${getPlayerName(a.casterId)} 精打細算，貢獻減半為 $${val}`);
-        });
-
-        // 3. 加倍處理
-        magicActions.filter(a => a.type === MAGIC_TYPES.DOUBLE).forEach(a => {
-            if (protected.has(a.targetId)) {
-                addLog(`🛡️ ${getPlayerName(a.targetId)} 防禦成功！`);
-            } else {
-                let val = finalContrib.get(a.targetId) * 2;
-                finalContrib.set(a.targetId, val);
-                addLog(`⚡ ${getPlayerName(a.casterId)} 對 ${getPlayerName(a.targetId)} 施放雙倍奉還！`);
-            }
-        });
-
-        // 結算扣款
-        let total = 0;
-        playersData.forEach(p => {
-            let pay = Math.min(finalContrib.get(p.id), p.funds);
-            p.funds -= pay;
-            total += pay;
-            finalContrib.set(p.id, pay); // 更新實際支付
-        });
-
-        const success = total >= currentThreshold;
-        addLog(`📊 回合總計: $${total} (門檻 $${currentThreshold}) -> ${success ? '✅ 成功' : '❌ 失敗'}`);
-
-        if (success) {
-            const blocked = new Set();
-            magicActions.filter(a => a.type === MAGIC_TYPES.BLOCK).forEach(a => {
-                if (!protected.has(a.targetId)) {
-                    blocked.add(a.targetId);
-                    addLog(`🚫 ${getPlayerName(a.casterId)} 封鎖了 ${getPlayerName(a.targetId)} 的獎勵`);
-                }
-            });
-            playersData.forEach(p => {
-                if (!blocked.has(p.id)) p.funds += currentReward;
-            });
+        if (currentRound > MAX_ROUNDS) {
+            addLog("遊戲已結束，請重新開始。");
+            return;
         }
-
+        
+        // 1. 收集原始出價
+        let rawBids = new Map();
+        for (let p of playersData) {
+            let bid = parseInt(document.getElementById(`bid-${p.id}`).value) || 0;
+            if (bid < 0) bid = 0;
+            if (bid > p.funds) bid = p.funds;
+            rawBids.set(p.id, bid);
+        }
+        
+        // 2. 收集魔法使用意圖 (尚未消耗卡片)
+        let magicIntents = [];
+        for (let p of playersData) {
+            const magicType = document.getElementById(`magicSelect-${p.id}`).value;
+            if (magicType && p.magicCards[magicType] > 0) {
+                let targetId = null;
+                if (magicType === MAGIC_TYPES.DOUBLE || magicType === MAGIC_TYPES.BLOCK) {
+                    const targetSelect = document.getElementById(`targetSelect-${p.id}`);
+                    if (targetSelect) targetId = parseInt(targetSelect.value);
+                }
+                magicIntents.push({ casterId: p.id, type: magicType, targetId });
+            }
+        }
+        
+        // 3. 初始化貢獻與支付 (貢獻 = 原始出價, 支付 = 原始出價)
+        let contribution = new Map();
+        let payment = new Map();
+        for (let p of playersData) {
+            contribution.set(p.id, rawBids.get(p.id));
+            payment.set(p.id, rawBids.get(p.id));
+        }
+        
+        // 4. 先處理半價魔法 (僅影響支付，不影響貢獻)
+        let halfUsers = magicIntents.filter(a => a.type === MAGIC_TYPES.HALF).map(a => a.casterId);
+        for (let pid of halfUsers) {
+            let pay = Math.floor(payment.get(pid) / 2);
+            payment.set(pid, pay);
+            addLog(`✨ ${getPlayerName(pid)} 使用「精打細算」: 支付 $${pay}，但貢獻仍為 $${contribution.get(pid)}`);
+        }
+        
+        // 5. 找出防禦使用者 (用於抵擋雙倍與封鎖)
+        let defenseUsers = new Set(magicIntents.filter(a => a.type === MAGIC_TYPES.DEFENSE).map(a => a.casterId));
+        
+        // 6. 處理雙倍魔法 (同時影響貢獻與支付)
+        let doubleActions = magicIntents.filter(a => a.type === MAGIC_TYPES.DOUBLE);
+        for (let act of doubleActions) {
+            const target = act.targetId;
+            if (defenseUsers.has(target)) {
+                addLog(`🛡️ ${getPlayerName(target)} 的鐵壁結界抵銷了 ${getPlayerName(act.casterId)} 的雙倍奉還！`);
+                continue;
+            }
+            let oldContrib = contribution.get(target);
+            let newContrib = oldContrib * 2;
+            let newPay = payment.get(target) * 2;
+            // 檢查資金上限
+            const targetPlayer = playersData.find(p => p.id === target);
+            if (newPay > targetPlayer.funds) {
+                // 只能支付到最大資金
+                newPay = targetPlayer.funds;
+                newContrib = newPay;  // 實際能貢獻的金額等於實際支付
+                addLog(`⚠️ ${getPlayerName(target)} 資金不足，雙倍效果受限，最終貢獻 ${newContrib}`);
+            }
+            contribution.set(target, newContrib);
+            payment.set(target, newPay);
+            addLog(`⚡ ${getPlayerName(act.casterId)} 對 ${getPlayerName(target)} 施放「雙倍奉還」: 貢獻 $${oldContrib} → $${newContrib}，支付 $${newPay}`);
+        }
+        
+        // 7. 計算總貢獻 (基於最終 contribution)
+        let totalContribution = 0;
+        for (let p of playersData) {
+            totalContribution += contribution.get(p.id);
+        }
+        
+        // 8. 扣除資金 (依 payment)
+        for (let p of playersData) {
+            let pay = payment.get(p.id);
+            if (pay > p.funds) pay = p.funds; // 安全保險
+            p.funds -= pay;
+            if (p.funds < 0) p.funds = 0;
+        }
+        
+        // 9. 判斷專案成功與否
+        const success = totalContribution >= currentThreshold;
+        addLog(`📊 總貢獻: $${totalContribution.toLocaleString()} (門檻 $${currentThreshold.toLocaleString()}) → ${success ? '✅ 成功！' : '❌ 失敗'}`);
+        
+        // 10. 處理封鎖魔法 (block) 與獎勵發放
+        const blockedSet = new Set();
+        if (success) {
+            let blockActions = magicIntents.filter(a => a.type === MAGIC_TYPES.BLOCK);
+            for (let act of blockActions) {
+                const target = act.targetId;
+                if (defenseUsers.has(target)) {
+                    addLog(`🛡️ ${getPlayerName(target)} 的防禦結界擋住了 ${getPlayerName(act.casterId)} 的釜底抽薪！`);
+                    continue;
+                }
+                blockedSet.add(target);
+                addLog(`⛔ ${getPlayerName(act.casterId)} 對 ${getPlayerName(target)} 使用釜底抽薪，使其無法獲得獎勵！`);
+            }
+            for (let p of playersData) {
+                if (!blockedSet.has(p.id)) {
+                    p.funds += currentReward;
+                    addLog(`🎉 ${p.name} 獲得公共財獎勵 +$${currentReward.toLocaleString()}`);
+                } else {
+                    addLog(`😭 ${p.name} 被封印，無法獲得獎勵...`);
+                }
+            }
+        }
+        
+        // 11. 消耗已使用的魔法卡 (只有成功施放的才消耗)
+        for (let act of magicIntents) {
+            const caster = playersData.find(p => p.id === act.casterId);
+            if (caster && caster.magicCards[act.type] > 0) {
+                // 如果是雙倍且目標被防禦，不消耗 (因為無效)
+                if (act.type === MAGIC_TYPES.DOUBLE && defenseUsers.has(act.targetId)) continue;
+                if (act.type === MAGIC_TYPES.BLOCK && defenseUsers.has(act.targetId)) continue;
+                caster.magicCards[act.type]--;
+            }
+        }
+        
+        // 12. 更新UI與回合推進
         renderPlayersUI();
         if (currentRound >= MAX_ROUNDS) {
             gameActive = false;
-            addLog("🎊 遊戲結束！最終贏家即將揭曉...");
+            addLog("🎊 10回合結束！最終結算：");
+            let finalMsg = playersData.map(p => `${p.name} 剩餘 $${p.funds.toLocaleString()}`).join(' | ');
+            addLog(`💰 ${finalMsg}`);
             document.getElementById("submitRoundBtn").disabled = true;
         } else {
             currentRound++;
             document.getElementById("roundNum").innerText = currentRound;
-            randomizeValues(); // 下一回合隨機化
+            randomizeValues();      // 新回合新門檻/獎勵
             updatePublicGoodsDisplay();
+            // 清空魔法選擇和目標下拉 (保留出價欄位但重置為0)
+            for (let p of playersData) {
+                const sel = document.getElementById(`magicSelect-${p.id}`);
+                if (sel) sel.value = "";
+                const targetDiv = document.getElementById(`targetDiv-${p.id}`);
+                if (targetDiv) targetDiv.innerHTML = "";
+                const bidInp = document.getElementById(`bid-${p.id}`);
+                if (bidInp) bidInp.value = "0";
+            }
         }
     }
-
-    function getPlayerName(id) { return playersData.find(p => p.id === id).name; }
-
+    
     window.onload = () => {
         initGame();
         document.getElementById("submitRoundBtn").onclick = resolveRound;

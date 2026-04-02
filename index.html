@@ -30,6 +30,60 @@
             transition: all 0.2s;
         }
 
+        /* 設定區塊 (初始彈窗樣式) */
+        .setup-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .setup-card {
+            background: #fff8e7;
+            border-radius: 60px;
+            padding: 30px 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            text-align: center;
+            border: 3px solid #ffcd94;
+        }
+        .setup-card h2 {
+            font-size: 2rem;
+            color: #b45f2b;
+        }
+        .setup-card input, .setup-card button {
+            font-size: 1.2rem;
+            padding: 10px 18px;
+            margin: 12px 5px;
+            border-radius: 60px;
+            border: 1px solid #dbaa63;
+        }
+        .setup-card button {
+            background: #ffaa33;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .player-name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .player-name-row span {
+            font-weight: bold;
+            width: 70px;
+        }
+        #playerNamesContainer {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+
         h1 {
             text-align: center;
             font-size: 2.8rem;
@@ -65,19 +119,23 @@
 
         .player-card {
             flex: 1;
-            min-width: 250px;
+            min-width: 220px;
             background: #fffcf0;
             border-radius: 48px;
             padding: 18px 14px 20px;
             box-shadow: 0 12px 18px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s ease;
             border: 2px solid #ffdd99;
+            opacity: 0.95;
         }
-        .player-card:hover {
-            transform: translateY(-6px);
+        .player-card.current-turn {
+            border: 4px solid #f5a623;
+            background: #fff7e8;
+            box-shadow: 0 0 0 3px #ffd966;
+            transform: scale(1.02);
         }
         .player-name {
-            font-size: 1.9rem;
+            font-size: 1.5rem;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -89,7 +147,7 @@
             padding: 6px 12px;
         }
         .funds {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: bold;
             text-align: center;
             background: #d9e6b3;
@@ -112,69 +170,56 @@
             background: #f5bc70;
             border-radius: 30px;
             padding: 4px 8px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: bold;
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            box-shadow: inset 0 1px 2px #fff9, 0 1px 2px #0002;
         }
-        .bid-input {
+        .action-area {
+            background: #f5e2c1;
+            border-radius: 48px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            border: 2px solid #ffcd94;
+        }
+        .turn-indicator {
+            font-size: 1.7rem;
+            font-weight: bold;
+            background: #b5712e;
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 50px;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .bid-turn-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .bid-turn-input input, .bid-turn-input select {
             width: 100%;
             padding: 12px;
             font-size: 1.2rem;
-            text-align: center;
-            border-radius: 40px;
+            border-radius: 50px;
             border: 2px solid #cb9e5e;
-            background: #fff6e8;
-            font-weight: bold;
-            margin: 10px 0;
         }
-        .magic-select, .target-select {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            border-radius: 30px;
-            background: #f8edc3;
-            font-weight: bold;
-            border: 1px solid #dbaa63;
-        }
-        label {
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #7b4a2a;
-        }
-        button {
-            background: #ffaa33;
-            border: none;
-            font-weight: bold;
-            padding: 8px 12px;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: 0.1s linear;
-            font-size: 0.85rem;
-            box-shadow: 0 3px 0 #aa6f2c;
-        }
-        button:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 #aa6f2c;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin: 20px 0 15px;
-        }
-        .big-btn {
+        .next-btn, .resolve-btn {
             background: #3b9e3d;
             color: white;
-            font-size: 1.3rem;
-            padding: 12px 28px;
-            box-shadow: 0 5px 0 #1e5a20;
+            font-size: 1.2rem;
+            padding: 10px 25px;
+            box-shadow: 0 4px 0 #1e5a20;
+            margin: 8px;
         }
-        .reset-btn {
-            background: #c97e2c;
-            box-shadow: 0 5px 0 #7e4a1a;
+        .resolve-btn {
+            background: #f0a500;
+            box-shadow: 0 4px 0 #b46f00;
         }
         .log-area {
             background: #2d2b1fcc;
@@ -186,7 +231,6 @@
             max-height: 280px;
             overflow-y: auto;
             margin-top: 20px;
-            border: 1px solid #ffdd99;
         }
         .log-entry {
             border-bottom: 1px solid #ffcf8a;
@@ -199,14 +243,13 @@
             padding: 10px 20px;
             text-align: center;
             font-weight: bold;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             margin-bottom: 20px;
             color: white;
             display: inline-flex;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
-            width: auto;
         }
         .public-goods-showcase {
             background: #f0dba8;
@@ -214,7 +257,6 @@
             padding: 8px 24px;
             margin-bottom: 20px;
             text-align: center;
-            box-shadow: inset 0 1px 4px rgba(0,0,0,0.05), 0 6px 12px rgba(0,0,0,0.1);
         }
         .goods-icons {
             font-size: 2rem;
@@ -228,26 +270,10 @@
             background: white;
             padding: 8px 14px;
             border-radius: 60px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #3b2a1f;
-        }
-        .goods-icons i {
-            font-size: 1.8rem;
-        }
-        .goods-title {
             font-size: 1rem;
-            color: #5c3e1c;
-            background: #ffe6b3;
-            display: inline-block;
-            padding: 4px 18px;
-            border-radius: 40px;
-            margin-bottom: 6px;
-            font-weight: bold;
         }
         footer {
             text-align: center;
@@ -255,78 +281,80 @@
             margin-top: 15px;
             color: #382812;
         }
-        @media (max-width: 780px) {
-            .player-card { min-width: 220px; }
-            .player-name { font-size: 1.3rem; }
-            .goods-icons span { font-size: 0.8rem; padding: 4px 10px; }
-            .goods-icons i { font-size: 1.2rem; }
+        button:disabled {
+            opacity: 0.5;
+            transform: none;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-<div class="game-container">
+<div id="setupOverlay" class="setup-overlay">
+    <div class="setup-card">
+        <h2>🎭 開局設定 🎭</h2>
+        <p>請輸入玩家人數 (2~6人) 與各自的名稱</p>
+        <input type="number" id="playerCountInput" min="2" max="6" value="4" step="1" style="width:100px; text-align:center;">
+        <button id="generateNameFields">✏️ 產生名稱欄位</button>
+        <div id="playerNamesContainer"></div>
+        <button id="startGameBtn" style="background:#3b9e3d; color:white;">🚀 開始遊戲</button>
+    </div>
+</div>
+
+<div class="game-container" id="gameMain" style="display:none;">
     <h1>🏡 社區奇蹟拍賣會 🎴</h1>
     <div style="text-align: center;">
-        <div class="sub">⚡ 公共財困境 ⚡</div>
+        <div class="sub">⚡ 公共財困境｜輪流盲標 ⚡</div>
     </div>
     <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
         <div class="round-info">🎲 第 <span id="roundNum">1</span> / <span id="maxRound">10</span> 回合</div>
-        <div class="round-info">🎯 專案門檻: $<span id="thresholdVal">----</span> &nbsp;|&nbsp; 🌟 成功每人獎勵: $<span id="rewardVal">----</span></div>
+        <div class="round-info">🎯 專案門檻: $<span id="thresholdVal">----</span> &nbsp;|&nbsp; 🌟 獎勵: $<span id="rewardVal">----</span></div>
     </div>
 
-    <div class="public-goods-showcase" id="publicGoodsArea">
+    <div class="public-goods-showcase">
         <div class="goods-title">🌍 本回合社區公共項目</div>
         <div class="goods-icons" id="goodsIconsContainer"></div>
     </div>
 
     <div class="players-row" id="playersRow"></div>
 
-    <div class="action-buttons">
-        <button id="submitRoundBtn" class="big-btn">✨ 送出盲標 & 使用魔法 ✨</button>
-        <button id="resetGameBtn" class="big-btn reset-btn">🔄 重新開始冒險</button>
+    <!-- 輪流行動區塊 -->
+    <div class="action-area" id="actionArea">
+        <div class="turn-indicator" id="turnIndicator">等待開始</div>
+        <div id="actionForm" class="bid-turn-input">
+            <!-- 動態顯示當前玩家出價及魔法選擇 -->
+        </div>
+        <div>
+            <button id="nextPlayerBtn" class="next-btn">⏩ 下一玩家</button>
+            <button id="resolveRoundBtn" class="resolve-btn">✨ 結束本回合並結算 ✨</button>
+        </div>
     </div>
 
     <div class="log-area" id="logPanel"></div>
-    <footer>🏆 10回合後結算｜「精打細算」：付半價，貢獻全額｜「雙倍奉還」：目標付出雙倍，貢獻雙倍｜防禦可擋雙倍&封鎖</footer>
+    <footer>🏆 10回合後結算｜「精打細算」：付半價，貢獻全額｜「雙倍奉還」：目標付出雙倍，貢獻雙倍｜防禦可擋雙倍&封鎖｜輪流出價，看不見他人盲標</footer>
 </div>
 
 <script>
-    // ----- 遊戲設定 -----
+    // ----- 遊戲固定設定 -----
     const MAX_ROUNDS = 10;
     const START_FUNDS = 5000;
-    
-    // 動態變數
-    let currentThreshold = 5000;
-    let currentReward = 500;
-    
     const MAGIC_TYPES = {
         DOUBLE: "double",
         HALF: "half",
         DEFENSE: "defense",
         BLOCK: "block"
     };
-    
     const MAGIC_NAMES = {
         [MAGIC_TYPES.DOUBLE]: "🔥 雙倍奉還 🔥",
         [MAGIC_TYPES.HALF]: "🍃 精打細算 🍃",
         [MAGIC_TYPES.DEFENSE]: "🛡️ 鐵壁結界 🛡️",
         [MAGIC_TYPES.BLOCK]: "⛔ 釜底抽薪 ⛔"
     };
-    
     const MAGIC_EMOJI = {
         [MAGIC_TYPES.DOUBLE]: "⚡x2",
         [MAGIC_TYPES.HALF]: "✂️½",
         [MAGIC_TYPES.DEFENSE]: "🛡️",
         [MAGIC_TYPES.BLOCK]: "🚫"
     };
-    
-    const PLAYERS = [
-        { id: 0, name: "🌻 向日葵小隊", emoji: "🌻" },
-        { id: 1, name: "🐻 懶懶熊團", emoji: "🐻" },
-        { id: 2, name: "🦊 機靈狐社", emoji: "🦊" },
-        { id: 3, name: "🐧 企鵝互助會", emoji: "🐧" }
-    ];
-    
     const PUBLIC_GOODS_LIST = [
         { name: "🌳 社區森林公園", icons: ["fas fa-tree", "fas fa-leaf", "fas fa-bench"] },
         { name: "📚 公共圖書館", icons: ["fas fa-book", "fas fa-university", "fas fa-graduation-cap"] },
@@ -339,12 +367,39 @@
         { name: "🎭 文化藝術廣場", icons: ["fas fa-theater-masks", "fas fa-music", "fas fa-palette"] },
         { name: "♻️ 資源回收環保站", icons: ["fas fa-recycle", "fas fa-leaf", "fas fa-trash-alt"] }
     ];
-    
+
+    let playersData = [];          // 儲存玩家物件 { id, name, emoji, funds, magicCards }
     let currentRound = 1;
     let gameActive = true;
-    let playersData = [];
+    let currentThreshold = 5000;
+    let currentReward = 500;
     
-    // --- 隨機化門檻與獎勵 (獎勵 > 門檻) ---
+    // 輪流盲標相關
+    let currentPlayerIndex = 0;           // 0 ~ N-1
+    let roundBids = [];                    // 儲存每回合各玩家的出價 (暫存)
+    let roundMagicIntents = [];            // 儲存每回合各玩家的魔法意圖 { type, targetId }
+    let hasSubmitted = [];                 // 布林陣列，標記該玩家是否已提交本回合
+    
+    // DOM 元素
+    const setupOverlay = document.getElementById("setupOverlay");
+    const gameMain = document.getElementById("gameMain");
+    const playerCountInput = document.getElementById("playerCountInput");
+    const generateBtn = document.getElementById("generateNameFields");
+    const playerNamesContainer = document.getElementById("playerNamesContainer");
+    const startGameBtn = document.getElementById("startGameBtn");
+    
+    // 輔助函式
+    function addLog(msg, isError = false) {
+        const logDiv = document.getElementById("logPanel");
+        if (!logDiv) return;
+        const entry = document.createElement("div");
+        entry.className = "log-entry";
+        entry.style.color = isError ? "#ffb5a7" : "#fff0cf";
+        entry.innerHTML = `📢 ${msg}`;
+        logDiv.appendChild(entry);
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+    
     function randomizeValues() {
         currentThreshold = Math.floor(Math.random() * (4500 - 500 + 1)) + 500;
         const minReward = currentThreshold + 100;
@@ -352,7 +407,7 @@
         document.getElementById("thresholdVal").innerText = currentThreshold.toLocaleString();
         document.getElementById("rewardVal").innerText = currentReward.toLocaleString();
     }
-
+    
     function updatePublicGoodsDisplay() {
         const container = document.getElementById("goodsIconsContainer");
         if (!container) return;
@@ -370,143 +425,189 @@
         });
     }
     
-    function addLog(msg, isError = false) {
-        const logDiv = document.getElementById("logPanel");
-        const entry = document.createElement("div");
-        entry.className = "log-entry";
-        entry.style.color = isError ? "#ffb5a7" : "#fff0cf";
-        entry.innerHTML = `📢 ${msg}`;
-        logDiv.appendChild(entry);
-        logDiv.scrollTop = logDiv.scrollHeight;
-    }
-    
-    function initGame() {
-        playersData = PLAYERS.map(p => ({
-            id: p.id,
-            name: p.name,
-            emoji: p.emoji,
-            funds: START_FUNDS,
-            magicCards: {
-                [MAGIC_TYPES.DOUBLE]: 1,
-                [MAGIC_TYPES.HALF]: 1,
-                [MAGIC_TYPES.DEFENSE]: 1,
-                [MAGIC_TYPES.BLOCK]: 1
-            }
-        }));
-        currentRound = 1;
-        gameActive = true;
-        document.getElementById("logPanel").innerHTML = "";
-        document.getElementById("submitRoundBtn").disabled = false;
-        
-        randomizeValues();
-        addLog("🎉 遊戲啟動！！");
-        renderPlayersUI();
-        document.getElementById("roundNum").innerText = currentRound;
-        updatePublicGoodsDisplay();
-    }
-    
+    // 渲染所有玩家卡片 (資金、魔法庫存，並且標記當前回合玩家)
     function renderPlayersUI() {
         const container = document.getElementById("playersRow");
+        if (!container) return;
         container.innerHTML = "";
-        playersData.forEach(p => {
+        playersData.forEach((p, idx) => {
             const card = document.createElement("div");
             card.className = "player-card";
-            card.dataset.pid = p.id;
+            if (gameActive && idx === currentPlayerIndex && hasSubmitted[idx] === false) {
+                card.classList.add("current-turn");
+            }
             card.innerHTML = `
                 <div class="player-name">${p.emoji} ${p.name}</div>
                 <div class="funds">💰 ${p.funds.toLocaleString()}</div>
-                <div class="magic-stats" id="magicStats-${p.id}">${renderMagicBadges(p)}</div>
-                <input type="number" id="bid-${p.id}" class="bid-input" value="0" min="0" step="100">
-                <label>✨ 魔法選擇</label>
-                <select id="magicSelect-${p.id}" class="magic-select" onchange="updateTargetSelector(${p.id}, this.value)">
-                    <option value="">不使用</option>
-                    ${renderMagicOptions(p)}
-                </select>
-                <div id="targetDiv-${p.id}"></div>
+                <div class="magic-stats" id="magicStats-${p.id}">
+                    ${Object.entries(MAGIC_NAMES).map(([type, name]) => 
+                        `<div class="magic-badge">${MAGIC_EMOJI[type]} ${p.magicCards[type]}</div>`
+                    ).join('')}
+                </div>
+                <div style="font-size:0.8rem; text-align:center; margin-top:5px;">
+                    ${hasSubmitted[idx] ? '✅ 已出價' : (idx === currentPlayerIndex && gameActive ? '🎯 行動中' : '⏳ 等待')}
+                </div>
             `;
             container.appendChild(card);
         });
     }
     
-    function renderMagicBadges(player) {
-        return Object.entries(MAGIC_NAMES).map(([type, name]) => 
-            `<div class="magic-badge">${MAGIC_EMOJI[type]} ${player.magicCards[type]}</div>`
-        ).join('');
+    // 刷新所有玩家的資金與魔法卡顯示 (不重建卡片)
+    function refreshStatsUI() {
+        playersData.forEach(p => {
+            const magicDiv = document.getElementById(`magicStats-${p.id}`);
+            if (magicDiv) {
+                magicDiv.innerHTML = Object.entries(MAGIC_NAMES).map(([type, name]) => 
+                    `<div class="magic-badge">${MAGIC_EMOJI[type]} ${p.magicCards[type]}</div>`
+                ).join('');
+            }
+        });
+        // 更新所有funds顯示
+        document.querySelectorAll(".player-card").forEach((card, idx) => {
+            const fundsDiv = card.querySelector(".funds");
+            if (fundsDiv && playersData[idx]) fundsDiv.innerHTML = `💰 ${playersData[idx].funds.toLocaleString()}`;
+        });
     }
     
-    function renderMagicOptions(player) {
-        return Object.entries(MAGIC_NAMES)
-            .filter(([type]) => player.magicCards[type] > 0)
-            .map(([type, name]) => `<option value="${type}">${MAGIC_EMOJI[type]} ${name}</option>`)
-            .join('');
-    }
-    
-    window.updateTargetSelector = function(playerId, magicType) {
-        const div = document.getElementById(`targetDiv-${playerId}`);
-        if (magicType === MAGIC_TYPES.DOUBLE || magicType === MAGIC_TYPES.BLOCK) {
-            let opts = playersData.filter(p => p.id !== playerId)
-                .map(p => `<option value="${p.id}">${p.emoji} ${p.name}</option>`).join('');
-            div.innerHTML = `<label>🎯 目標</label><select id="targetSelect-${playerId}" class="target-select">${opts}</select>`;
-        } else {
-            div.innerHTML = "";
-        }
-    };
-    
-    function getPlayerName(id) { return playersData.find(p => p.id === id).name; }
-    
-    // ----- 核心結算邏輯 (修訂版) -----
-    function resolveRound() {
-        if (!gameActive) return;
-        if (currentRound > MAX_ROUNDS) {
-            addLog("遊戲已結束，請重新開始。");
-            return;
-        }
+    // 產生當前玩家的行動表單
+    function renderActionForm() {
+        const container = document.getElementById("actionForm");
+        if (!container) return;
+        const currentPlayer = playersData[currentPlayerIndex];
+        if (!currentPlayer) return;
+        const turnIndicator = document.getElementById("turnIndicator");
+        turnIndicator.innerText = `🎲 當前行動：${currentPlayer.name} 請盲標 🎲`;
         
-        // 1. 收集原始出價
-        let rawBids = new Map();
-        for (let p of playersData) {
-            let bid = parseInt(document.getElementById(`bid-${p.id}`).value) || 0;
-            if (bid < 0) bid = 0;
-            if (bid > p.funds) bid = p.funds;
-            rawBids.set(p.id, bid);
-        }
-        
-        // 2. 收集魔法使用意圖 (尚未消耗卡片)
-        let magicIntents = [];
-        for (let p of playersData) {
-            const magicType = document.getElementById(`magicSelect-${p.id}`).value;
-            if (magicType && p.magicCards[magicType] > 0) {
-                let targetId = null;
-                if (magicType === MAGIC_TYPES.DOUBLE || magicType === MAGIC_TYPES.BLOCK) {
-                    const targetSelect = document.getElementById(`targetSelect-${p.id}`);
-                    if (targetSelect) targetId = parseInt(targetSelect.value);
-                }
-                magicIntents.push({ casterId: p.id, type: magicType, targetId });
+        // 建立下拉選單 (魔法卡，過濾庫存>0)
+        let magicOptions = `<option value="">無 (不使用魔法)</option>`;
+        for (const [type, name] of Object.entries(MAGIC_NAMES)) {
+            if (currentPlayer.magicCards[type] > 0) {
+                magicOptions += `<option value="${type}">${MAGIC_EMOJI[type]} ${name}</option>`;
             }
         }
         
-        // 3. 初始化貢獻與支付 (貢獻 = 原始出價, 支付 = 原始出價)
+        container.innerHTML = `
+            <label>💰 貢獻金額 (最高 ${currentPlayer.funds})：</label>
+            <input type="number" id="tempBid" value="0" min="0" max="${currentPlayer.funds}" step="100">
+            <label>✨ 選擇魔法卡 (一回合一張)</label>
+            <select id="tempMagic">${magicOptions}</select>
+            <div id="tempTargetDiv"></div>
+        `;
+        const magicSelect = document.getElementById("tempMagic");
+        magicSelect.addEventListener("change", () => updateTempTarget(magicSelect.value));
+        updateTempTarget(magicSelect.value);
+    }
+    
+    function updateTempTarget(magicType) {
+        const targetDiv = document.getElementById("tempTargetDiv");
+        if (!targetDiv) return;
+        if (magicType === MAGIC_TYPES.DOUBLE || magicType === MAGIC_TYPES.BLOCK) {
+            let otherPlayers = playersData.filter(p => p.id !== playersData[currentPlayerIndex].id);
+            let opts = otherPlayers.map(p => `<option value="${p.id}">${p.emoji} ${p.name}</option>`).join('');
+            targetDiv.innerHTML = `<label>🎯 選擇目標</label><select id="tempTarget">${opts}</select>`;
+        } else {
+            targetDiv.innerHTML = "";
+        }
+    }
+    
+    // 提交當前玩家的出價與魔法
+    function submitCurrentPlayer() {
+        if (!gameActive) return;
+        if (hasSubmitted[currentPlayerIndex]) {
+            addLog(`${playersData[currentPlayerIndex].name} 已經出價過了！`, true);
+            return;
+        }
+        const bidInput = document.getElementById("tempBid");
+        let bid = parseInt(bidInput.value);
+        if (isNaN(bid)) bid = 0;
+        const player = playersData[currentPlayerIndex];
+        if (bid > player.funds) bid = player.funds;
+        if (bid < 0) bid = 0;
+        
+        const magicSelect = document.getElementById("tempMagic");
+        const magicType = magicSelect.value;
+        let targetId = null;
+        if (magicType === MAGIC_TYPES.DOUBLE || magicType === MAGIC_TYPES.BLOCK) {
+            const targetSel = document.getElementById("tempTarget");
+            if (targetSel) targetId = parseInt(targetSel.value);
+            if (targetId === player.id) targetId = null;
+        }
+        // 檢查魔法卡庫存 (以防作弊)
+        if (magicType && player.magicCards[magicType] <= 0) {
+            addLog(`⚠️ ${player.name} 沒有 ${MAGIC_NAMES[magicType]} 庫存，魔法失效。`, true);
+            // 不記錄魔法
+            roundMagicIntents[currentPlayerIndex] = null;
+        } else {
+            roundMagicIntents[currentPlayerIndex] = magicType ? { type: magicType, targetId: targetId } : null;
+        }
+        
+        roundBids[currentPlayerIndex] = bid;
+        hasSubmitted[currentPlayerIndex] = true;
+        addLog(`🔒 ${player.name} 已提交盲標 (貢獻 $${bid})${magicType ? `，並使用了 ${MAGIC_NAMES[magicType]}` : ''}`);
+        
+        // 檢查是否所有玩家都已提交
+        const allSubmitted = hasSubmitted.every(v => v === true);
+        if (allSubmitted) {
+            // 自動觸發結算 (或者顯示結算按鈕已亮, 但為了體驗直接顯示可結算)
+            addLog("✅ 所有玩家完成盲標，請點擊「結束本回合並結算」進行結算。");
+            document.getElementById("resolveRoundBtn").style.background = "#ff8c00";
+        } else {
+            // 移動到下一位未提交玩家
+            let nextIdx = (currentPlayerIndex + 1) % playersData.length;
+            while (hasSubmitted[nextIdx] && nextIdx !== currentPlayerIndex) {
+                nextIdx = (nextIdx + 1) % playersData.length;
+            }
+            currentPlayerIndex = nextIdx;
+            renderPlayersUI();
+            renderActionForm();
+        }
+        renderPlayersUI(); // 更新標記
+        refreshStatsUI();
+    }
+    
+    // 結算回合 (使用收集到的roundBids, roundMagicIntents)
+    function resolveRound() {
+        if (!gameActive) return;
+        // 檢查是否所有人都已提交
+        if (!hasSubmitted.every(v => v === true)) {
+            addLog("還有玩家尚未出價，請所有玩家完成盲標後再結算！", true);
+            return;
+        }
+        
+        // 複製當前貢獻與魔法意圖
         let contribution = new Map();
         let payment = new Map();
-        for (let p of playersData) {
-            contribution.set(p.id, rawBids.get(p.id));
-            payment.set(p.id, rawBids.get(p.id));
+        for (let i = 0; i < playersData.length; i++) {
+            let bid = roundBids[i];
+            contribution.set(playersData[i].id, bid);
+            payment.set(playersData[i].id, bid);
         }
         
-        // 4. 先處理半價魔法 (僅影響支付，不影響貢獻)
-        let halfUsers = magicIntents.filter(a => a.type === MAGIC_TYPES.HALF).map(a => a.casterId);
-        for (let pid of halfUsers) {
-            let pay = Math.floor(payment.get(pid) / 2);
-            payment.set(pid, pay);
-            addLog(`✨ ${getPlayerName(pid)} 使用「精打細算」: 支付 $${pay}，但貢獻仍為 $${contribution.get(pid)}`);
+        let magicIntents = [];
+        for (let i = 0; i < playersData.length; i++) {
+            if (roundMagicIntents[i]) {
+                magicIntents.push({
+                    casterId: playersData[i].id,
+                    type: roundMagicIntents[i].type,
+                    targetId: roundMagicIntents[i].targetId
+                });
+            }
         }
         
-        // 5. 找出防禦使用者 (用於抵擋雙倍與封鎖)
+        // 半價魔法 (支付減半，貢獻不變)
+        for (let act of magicIntents.filter(a => a.type === MAGIC_TYPES.HALF)) {
+            let pid = act.casterId;
+            let oldPay = payment.get(pid);
+            let newPay = Math.floor(oldPay / 2);
+            payment.set(pid, newPay);
+            addLog(`✨ ${getPlayerName(pid)} 使用「精打細算」: 支付 $${newPay}，貢獻仍為 $${contribution.get(pid)}`);
+        }
+        
+        // 防禦集合
         let defenseUsers = new Set(magicIntents.filter(a => a.type === MAGIC_TYPES.DEFENSE).map(a => a.casterId));
         
-        // 6. 處理雙倍魔法 (同時影響貢獻與支付)
-        let doubleActions = magicIntents.filter(a => a.type === MAGIC_TYPES.DOUBLE);
-        for (let act of doubleActions) {
+        // 雙倍魔法
+        for (let act of magicIntents.filter(a => a.type === MAGIC_TYPES.DOUBLE)) {
             const target = act.targetId;
             if (defenseUsers.has(target)) {
                 addLog(`🛡️ ${getPlayerName(target)} 的鐵壁結界抵銷了 ${getPlayerName(act.casterId)} 的雙倍奉還！`);
@@ -515,49 +616,43 @@
             let oldContrib = contribution.get(target);
             let newContrib = oldContrib * 2;
             let newPay = payment.get(target) * 2;
-            // 檢查資金上限
             const targetPlayer = playersData.find(p => p.id === target);
             if (newPay > targetPlayer.funds) {
-                // 只能支付到最大資金
                 newPay = targetPlayer.funds;
-                newContrib = newPay;  // 實際能貢獻的金額等於實際支付
+                newContrib = newPay;
                 addLog(`⚠️ ${getPlayerName(target)} 資金不足，雙倍效果受限，最終貢獻 ${newContrib}`);
             }
             contribution.set(target, newContrib);
             payment.set(target, newPay);
-            addLog(`⚡ ${getPlayerName(act.casterId)} 對 ${getPlayerName(target)} 施放「雙倍奉還」: 貢獻 $${oldContrib} → $${newContrib}，支付 $${newPay}`);
+            addLog(`⚡ ${getPlayerName(act.casterId)} 對 ${getPlayerName(target)} 施放「雙倍奉還」: 貢獻 $${oldContrib} → $${newContrib}`);
         }
         
-        // 7. 計算總貢獻 (基於最終 contribution)
+        // 計算總貢獻
         let totalContribution = 0;
-        for (let p of playersData) {
-            totalContribution += contribution.get(p.id);
-        }
+        for (let p of playersData) totalContribution += contribution.get(p.id);
         
-        // 8. 扣除資金 (依 payment)
+        // 扣除資金
         for (let p of playersData) {
             let pay = payment.get(p.id);
-            if (pay > p.funds) pay = p.funds; // 安全保險
+            if (pay > p.funds) pay = p.funds;
             p.funds -= pay;
             if (p.funds < 0) p.funds = 0;
         }
         
-        // 9. 判斷專案成功與否
         const success = totalContribution >= currentThreshold;
         addLog(`📊 總貢獻: $${totalContribution.toLocaleString()} (門檻 $${currentThreshold.toLocaleString()}) → ${success ? '✅ 成功！' : '❌ 失敗'}`);
         
-        // 10. 處理封鎖魔法 (block) 與獎勵發放
+        // 封鎖與獎勵
         const blockedSet = new Set();
         if (success) {
-            let blockActions = magicIntents.filter(a => a.type === MAGIC_TYPES.BLOCK);
-            for (let act of blockActions) {
+            for (let act of magicIntents.filter(a => a.type === MAGIC_TYPES.BLOCK)) {
                 const target = act.targetId;
                 if (defenseUsers.has(target)) {
                     addLog(`🛡️ ${getPlayerName(target)} 的防禦結界擋住了 ${getPlayerName(act.casterId)} 的釜底抽薪！`);
                     continue;
                 }
                 blockedSet.add(target);
-                addLog(`⛔ ${getPlayerName(act.casterId)} 對 ${getPlayerName(target)} 使用釜底抽薪，使其無法獲得獎勵！`);
+                addLog(`⛔ ${getPlayerName(act.casterId)} 對 ${getPlayerName(target)} 使用釜底抽薪，無法獲得獎勵！`);
             }
             for (let p of playersData) {
                 if (!blockedSet.has(p.id)) {
@@ -569,47 +664,116 @@
             }
         }
         
-        // 11. 消耗已使用的魔法卡 (只有成功施放的才消耗)
+        // 消耗魔法卡 (只有成功施放的)
         for (let act of magicIntents) {
             const caster = playersData.find(p => p.id === act.casterId);
-            if (caster && caster.magicCards[act.type] > 0) {
-                // 如果是雙倍且目標被防禦，不消耗 (因為無效)
-                if (act.type === MAGIC_TYPES.DOUBLE && defenseUsers.has(act.targetId)) continue;
-                if (act.type === MAGIC_TYPES.BLOCK && defenseUsers.has(act.targetId)) continue;
-                caster.magicCards[act.type]--;
-            }
+            if (!caster) continue;
+            if (act.type === MAGIC_TYPES.DOUBLE && defenseUsers.has(act.targetId)) continue;
+            if (act.type === MAGIC_TYPES.BLOCK && defenseUsers.has(act.targetId)) continue;
+            if (caster.magicCards[act.type] > 0) caster.magicCards[act.type]--;
         }
         
-        // 12. 更新UI與回合推進
+        // 刷新畫面
+        refreshStatsUI();
         renderPlayersUI();
+        
+        // 回合推進
         if (currentRound >= MAX_ROUNDS) {
             gameActive = false;
-            addLog("🎊 10回合結束！最終結算：");
+            addLog("🎊 遊戲全部10回合結束！最終結算 🎊");
             let finalMsg = playersData.map(p => `${p.name} 剩餘 $${p.funds.toLocaleString()}`).join(' | ');
             addLog(`💰 ${finalMsg}`);
-            document.getElementById("submitRoundBtn").disabled = true;
+            document.getElementById("nextPlayerBtn").disabled = true;
+            document.getElementById("resolveRoundBtn").disabled = true;
+            return;
         } else {
             currentRound++;
             document.getElementById("roundNum").innerText = currentRound;
-            randomizeValues();      // 新回合新門檻/獎勵
+            randomizeValues();
             updatePublicGoodsDisplay();
-            // 清空魔法選擇和目標下拉 (保留出價欄位但重置為0)
-            for (let p of playersData) {
-                const sel = document.getElementById(`magicSelect-${p.id}`);
-                if (sel) sel.value = "";
-                const targetDiv = document.getElementById(`targetDiv-${p.id}`);
-                if (targetDiv) targetDiv.innerHTML = "";
-                const bidInp = document.getElementById(`bid-${p.id}`);
-                if (bidInp) bidInp.value = "0";
-            }
+            // 重置回合狀態
+            roundBids = new Array(playersData.length).fill(0);
+            roundMagicIntents = new Array(playersData.length).fill(null);
+            hasSubmitted = new Array(playersData.length).fill(false);
+            currentPlayerIndex = 0;
+            renderPlayersUI();
+            renderActionForm();
+            addLog(`🎲 進入第 ${currentRound} 回合，新門檻 $${currentThreshold}，獎勵 $${currentReward}`);
+            document.getElementById("resolveRoundBtn").style.background = "#f0a500";
         }
     }
     
-    window.onload = () => {
-        initGame();
-        document.getElementById("submitRoundBtn").onclick = resolveRound;
-        document.getElementById("resetGameBtn").onclick = initGame;
-    };
+    function getPlayerName(id) {
+        let p = playersData.find(p => p.id === id);
+        return p ? p.name : "未知";
+    }
+    
+    // 初始化遊戲 (根據設定好的玩家)
+    function startGameWithPlayers(playersArray) {
+        playersData = playersArray.map((p, idx) => ({
+            id: idx,
+            name: p.name,
+            emoji: p.emoji || ["🌻","🐻","🦊","🐧","🐱","🐼"][idx % 6],
+            funds: START_FUNDS,
+            magicCards: {
+                [MAGIC_TYPES.DOUBLE]: 1,
+                [MAGIC_TYPES.HALF]: 1,
+                [MAGIC_TYPES.DEFENSE]: 1,
+                [MAGIC_TYPES.BLOCK]: 1
+            }
+        }));
+        currentRound = 1;
+        gameActive = true;
+        randomizeValues();
+        roundBids = new Array(playersData.length).fill(0);
+        roundMagicIntents = new Array(playersData.length).fill(null);
+        hasSubmitted = new Array(playersData.length).fill(false);
+        currentPlayerIndex = 0;
+        
+        document.getElementById("logPanel").innerHTML = "";
+        addLog(`🎉 遊戲開始！共有 ${playersData.length} 位玩家。每回合輪流盲標，結算前無法看到他人出價。`);
+        addLog(`🏆 第一回合門檻 $${currentThreshold}，獎勵 $${currentReward}`);
+        
+        renderPlayersUI();
+        renderActionForm();
+        updatePublicGoodsDisplay();
+        document.getElementById("roundNum").innerText = currentRound;
+        document.getElementById("nextPlayerBtn").onclick = () => submitCurrentPlayer();
+        document.getElementById("resolveRoundBtn").onclick = () => resolveRound();
+        document.getElementById("nextPlayerBtn").disabled = false;
+        document.getElementById("resolveRoundBtn").disabled = false;
+    }
+    
+    // ----- 設定流程 -----
+    generateBtn.addEventListener("click", () => {
+        let count = parseInt(playerCountInput.value);
+        if (count < 2) count = 2;
+        if (count > 6) count = 6;
+        playerNamesContainer.innerHTML = "";
+        for (let i = 0; i < count; i++) {
+            const div = document.createElement("div");
+            div.className = "player-name-row";
+            div.innerHTML = `<span>玩家 ${i+1}</span> <input type="text" id="pName${i}" placeholder="輸入名稱" value="冒險者${i+1}">`;
+            playerNamesContainer.appendChild(div);
+        }
+    });
+    generateBtn.click();
+    
+    startGameBtn.addEventListener("click", () => {
+        let count = parseInt(playerCountInput.value);
+        if (count < 2) count = 2;
+        if (count > 6) count = 6;
+        let players = [];
+        for (let i = 0; i < count; i++) {
+            let nameInput = document.getElementById(`pName${i}`);
+            let name = nameInput ? nameInput.value.trim() : `玩家${i+1}`;
+            if (name === "") name = `玩家${i+1}`;
+            players.push({ name: name, emoji: ["🌻","🐻","🦊","🐧","🐱","🐼"][i % 6] });
+        }
+        setupOverlay.style.display = "none";
+        gameMain.style.display = "block";
+        startGameWithPlayers(players);
+    });
 </script>
 </body>
 </html>
